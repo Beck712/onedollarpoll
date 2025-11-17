@@ -16,7 +16,6 @@
     "stripe": "^14.11.0",
     "uuid": "^9.0.1",
     "js-cookie": "^3.0.5",
-    "crypto": "^1.0.1",
     "rate-limiter-flexible": "^4.0.1"
   },
   "devDependencies": {
