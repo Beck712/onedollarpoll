@@ -14,7 +14,7 @@ export async function POST(
     const ip = getClientIP(request);
 
     // Rate limiting
-    const canProceed = await checkRateLimit(checkoutLimiter, { ip, clientHash });
+    const canProceed = await checkRateLimit(checkoutLimiter, `checkout:${ip}:${clientHash}`);
     if (!canProceed) {
       return NextResponse.json(
         { error: 'Too many checkout attempts. Please try again later.' },
@@ -38,7 +38,10 @@ export async function POST(
       const poll = pollResult.rows[0];
 
       if (poll.visibility !== 'pay_to_view') {
-        return NextResponse.json({ error: 'This poll does not require payment to view results' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'This poll does not require payment to view results' },
+          { status: 400 }
+        );
       }
 
       // Check if user has already paid
@@ -48,11 +51,14 @@ export async function POST(
       );
 
       if (existingPayment.rows.length > 0) {
-        return NextResponse.json({ error: 'You have already paid to view results for this poll' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'You have already paid to view results for this poll' },
+          { status: 400 }
+        );
       }
 
       const baseUrl = process.env.APP_BASE_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`;
-      
+
       // Create Stripe checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
